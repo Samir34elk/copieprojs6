@@ -35,4 +35,34 @@ router.get("/connect/facebook/callback", passport.authenticate("facebook", {fail
     }
 );
 
+// Twitter OAuth
+router.get("/connect/twitter", passport.authenticate("twitter"));
+
+router.get(
+    "/connect/twitter/callback",
+    passport.authenticate("twitter", {failureRedirect: "/login"}),
+    async (req, res) => {
+        const {id, accessToken} = req.user;
+        const userId = req.query.user_id; // Récupérer l'ID de l'utilisateur connecté depuis l'URL
+
+        if (!userId) {
+            return res.status(400).json({error: "user_id manquant !"});
+        }
+
+        try {
+            // Enregistrer ou mettre à jour le token en base
+            await SocialAuth.findOneAndUpdate(
+                {user: userId, provider: "twitter"},
+                {accessToken},
+                {upsert: true, new: true}
+            );
+
+            res.send("<script>window.close();</script>"); // Ferme la popup après succès
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({error: "Erreur lors de l'enregistrement du token"});
+        }
+    }
+);
+
 module.exports = router;
