@@ -7,7 +7,7 @@ const User = require("../../users/models/User");
 passport.use(new FacebookStrategy({
         clientID: process.env.FACEBOOK_CLIENT_ID,
         clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-        callbackURL: process.env.PROXY_GATEWAY + "api/socialauth/connect/facebook/callback",
+        callbackURL: process.env.PROXY_GATEWAY + "/api/socialauth/connect/facebook/callback",
         profileFields: ["id", "emails", "name"],
         passReqToCallback: true // Ajoutez cette option pour passer l'objet `req` au callback
     },
@@ -42,7 +42,7 @@ passport.use(new FacebookStrategy({
 passport.use(new TwitterStrategy({
         consumerKey: process.env.TWITTER_KEY,
         consumerSecret: process.env.TWITTER_SECRET,
-        callbackURL: process.env.PROXY_GATEWAY + "/auth/twitter/callback"
+        callbackURL: process.env.PROXY_GATEWAY + "api/socialauth/twitter/callback"
     },
     function (token, tokenSecret, profile, cb) {
         User.findOrCreate({twitterId: profile.id}, function (err, user) {
