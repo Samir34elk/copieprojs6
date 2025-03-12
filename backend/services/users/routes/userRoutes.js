@@ -20,7 +20,7 @@ const registerValidation = [
 ];
 
 // Routes publiques
-router.post('/register', registerValidation, userController.register);
+router.post('/register', userController.register);
 router.post('/login', userController.login);
 
 // Routes protégées
