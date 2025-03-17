@@ -2,7 +2,7 @@ const express = require("express");
 const passport = require("passport");
 const FacebookStrategy = require("passport-facebook").Strategy;
 const TwitterStrategy = require("passport-twitter").Strategy;
-const User = require("../models/User"); // Modèle User
+const User = require("../../users/models/User"); // Modèle User
 const SocialAuth = require("../models/SocialAuth"); // Modèle SocialAuth
 const router = express.Router();
 
