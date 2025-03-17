@@ -2,8 +2,8 @@ const express = require("express");
 const passport = require("passport");
 const FacebookStrategy = require("passport-facebook").Strategy;
 const TwitterStrategy = require("passport-twitter").Strategy;
-const User = require("../models/User"); // Importez votre modèle User
-const SocialAuth = require("../models/SocialAuth"); // Importez votre modèle SocialAuth
+const User = require("../models/User"); // Modèle User
+const SocialAuth = require("../models/SocialAuth"); // Modèle SocialAuth
 const router = express.Router();
 
 // Middleware pour protéger les routes
@@ -16,25 +16,30 @@ router.get("/connect/facebook", passport.authenticate("facebook", {
 
 router.get("/connect/facebook/callback", passport.authenticate("facebook", { failureRedirect: "/login" }),
     async (req, res) => {
-        const { id, accessToken } = req.user;
-        const userId = req.query.user_id; // Récupérer l'ID de l'utilisateur connecté depuis l'URL
+        const { id, accessToken } = req.user; // Informations renvoyées par Facebook
+        const userId = req.query.user_id; // ID de l'utilisateur connecté dans votre application
 
         if (!userId) {
             return res.status(400).json({ error: "user_id manquant !" });
         }
 
         try {
-            // Enregistrer ou mettre à jour le token en base
+            // Enregistrer ou mettre à jour la configuration Facebook dans SocialAuth
             await SocialAuth.findOneAndUpdate(
-                { user: userId, provider: "facebook" },
-                { accessToken },
-                { upsert: true, new: true }
+                { user: userId, provider: "facebook" }, // Critères de recherche
+                {
+                    providerId: id, // Facebook ID
+                    accessToken,
+                    email: req.user.email, // Optionnel
+                    name: req.user.name // Optionnel
+                },
+                { upsert: true, new: true } // Crée une entrée si elle n'existe pas
             );
 
             res.send("<script>window.close();</script>"); // Ferme la popup après succès
         } catch (err) {
             console.error(err);
-            res.status(500).json({ error: "Erreur lors de l'enregistrement du token" });
+            res.status(500).json({ error: "Erreur lors de l'enregistrement de la configuration Facebook" });
         }
     }
 );
@@ -46,25 +51,30 @@ router.get(
     "/connect/twitter/callback",
     passport.authenticate("twitter", { failureRedirect: "/login" }),
     async (req, res) => {
-        const { id, accessToken } = req.user;
-        const userId = req.query.user_id; // Récupérer l'ID de l'utilisateur connecté depuis l'URL
+        const { id, accessToken } = req.user; // Informations renvoyées par Twitter
+        const userId = req.query.user_id; // ID de l'utilisateur connecté dans votre application
 
         if (!userId) {
             return res.status(400).json({ error: "user_id manquant !" });
         }
 
         try {
-            // Enregistrer ou mettre à jour le token en base
+            // Enregistrer ou mettre à jour la configuration Twitter dans SocialAuth
             await SocialAuth.findOneAndUpdate(
-                { user: userId, provider: "twitter" },
-                { accessToken },
-                { upsert: true, new: true }
+                { user: userId, provider: "twitter" }, // Critères de recherche
+                {
+                    providerId: id, // Twitter ID
+                    accessToken,
+                    username: req.user.username, // Optionnel
+                    displayName: req.user.displayName // Optionnel
+                },
+                { upsert: true, new: true } // Crée une entrée si elle n'existe pas
             );
 
             res.send("<script>window.close();</script>"); // Ferme la popup après succès
         } catch (err) {
             console.error(err);
-            res.status(500).json({ error: "Erreur lors de l'enregistrement du token" });
+            res.status(500).json({ error: "Erreur lors de l'enregistrement de la configuration Twitter" });
         }
     }
 );
@@ -75,7 +85,7 @@ passport.use(new FacebookStrategy({
     clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
     callbackURL: process.env.PROXY_GATEWAY + "/api/socialauth/connect/facebook/callback",
     profileFields: ["id", "emails", "name"],
-    passReqToCallback: true // Ajoutez cette option pour passer l'objet `req` au callback
+    passReqToCallback: true // Passe l'objet `req` au callback
 },
     async (req, accessToken, refreshToken, profile, done) => {
         try {
@@ -87,17 +97,13 @@ passport.use(new FacebookStrategy({
                 origin: origin
             });
 
-            let user = await User.findOne({ facebookId: profile.id });
-            if (!user) {
-                user = new User({
-                    facebookId: profile.id,
-                    email: profile.emails ? profile.emails[0].value : "",
-                    name: profile.name.givenName + " " + profile.name.familyName
-                });
-                await user.save();
-            }
-
-            return done(null, { id: user.id, accessToken });
+            // Renvoyer les informations nécessaires pour SocialAuth
+            return done(null, {
+                id: profile.id, // Facebook ID
+                accessToken,
+                email: profile.emails ? profile.emails[0].value : null,
+                name: profile.name.givenName + " " + profile.name.familyName
+            });
         } catch (err) {
             return done(err, null);
         }
@@ -107,22 +113,20 @@ passport.use(new FacebookStrategy({
 passport.use(new TwitterStrategy({
     consumerKey: process.env.TWITTER_KEY,
     consumerSecret: process.env.TWITTER_SECRET,
-    callbackURL: process.env.PROXY_GATEWAY + "/api/socialauth/twitter/callback"
+    callbackURL: process.env.PROXY_GATEWAY + "/api/socialauth/twitter/callback",
+    passReqToCallback: true // Passe l'objet `req` au callback
 },
-    async (token, tokenSecret, profile, cb) => {
+    async (req, token, tokenSecret, profile, done) => {
         try {
-            let user = await User.findOne({ twitterId: profile.id });
-            if (!user) {
-                user = new User({
-                    twitterId: profile.id,
-                    username: profile.username,
-                    displayName: profile.displayName
-                });
-                await user.save();
-            }
-            cb(null, user);
+            // Renvoyer les informations nécessaires pour SocialAuth
+            return done(null, {
+                id: profile.id, // Twitter ID
+                accessToken: token,
+                username: profile.username,
+                displayName: profile.displayName
+            });
         } catch (err) {
-            cb(err, null);
+            return done(err, null);
         }
     }
 ));
