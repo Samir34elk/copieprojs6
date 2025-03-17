@@ -2,21 +2,21 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const auth = require('../middleware/auth');
-const { body } = require('express-validator');
+const {body} = require('express-validator');
 
 // Validation pour l'inscription
 const registerValidation = [
     body('username')
-        .trim()
-        .isLength({ min: 3 })
-        .withMessage('Le nom d\'utilisateur doit contenir au moins 3 caractères'),
+    .trim()
+    .isLength({min: 3})
+    .withMessage('Le nom d\'utilisateur doit contenir au moins 3 caractères'),
     body('email')
-        .isEmail()
-        .normalizeEmail()
-        .withMessage('Email invalide'),
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Email invalide'),
     body('password')
-        .isLength({ min: 6 })
-        .withMessage('Le mot de passe doit contenir au moins 6 caractères')
+    .isLength({min: 6})
+    .withMessage('Le mot de passe doit contenir au moins 6 caractères')
 ];
 
 // Routes publiques

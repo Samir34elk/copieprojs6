@@ -10,6 +10,7 @@ export default defineConfig({
     ],
     build: {
         target: 'esnext',
+
     },
     server: {
         proxy: {
@@ -22,3 +23,5 @@ export default defineConfig({
     },
 })
 
+    },
+})
