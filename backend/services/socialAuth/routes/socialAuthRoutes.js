@@ -1,6 +1,7 @@
 const passport = require("passport");
 const FacebookStrategy = require("passport-facebook").Strategy;
 const TwitterStrategy = require("passport-twitter").Strategy;
+const router = express.Router();
 
 
 // Middleware pour protéger les routes
