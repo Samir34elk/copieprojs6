@@ -21,4 +21,5 @@ require("./config/passport"); // Charge la configuration de Passport
 app.use(socialAuthRoutes);
 
 const PORT = process.env.PORT || 3002;
-app.listen(PORT, () => console.log(`🚀 SocialAuth Service démarré sur http://localhost:${PORT}`));
+
+app.listen(PORT);

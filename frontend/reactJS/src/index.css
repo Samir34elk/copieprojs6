@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Supprime les flèches sur Chrome, Safari et Edge */
 input[type="number"]::-webkit-inner-spin-button,

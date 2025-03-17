@@ -10,6 +10,7 @@ export default defineConfig({
     ],
     build: {
         target: 'esnext',
+
     },
     server: {
         proxy: {
@@ -18,6 +19,9 @@ export default defineConfig({
 
         host: "localhost",
         // Change si besoin
+
+    },
+})
 
     },
 })

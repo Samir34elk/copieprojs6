@@ -14,15 +14,13 @@ app.use(cors());
 app.use(express.json());
 
 // Proxy configuration
-app.use('/api/users', proxy(process.env.PROXY_USERS));
-app.use('/api/socialauth', proxy(process.env.PROXY_SOCIALAUTH));
-//app.use('/api/posts', proxy('http://0.0.0.0:3002'));
+app.use('/api/users', proxy(process.env.PROXY_USERS, {timeout: 10000}));
+app.use('/api/socialauth', proxy(process.env.PROXY_SOCIALAUTH, {timeout: 10000}));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
     res.json({status: 'OK'});
 });
 
-app.listen(PORT, () => {
-    console.log(`API Gateway running on port ${PORT}`);
-});
+// Démarrer le serveur HTTPS
+app.listen(PORT);

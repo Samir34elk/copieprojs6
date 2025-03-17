@@ -22,7 +22,6 @@ passport.use(new FacebookStrategy({
             });
 
             let user = await User.findOne({facebookId: profile.id});
-            console.log("je suis la");
             if (!user) {
                 user = new User({
                     facebookId: profile.id,
@@ -36,6 +35,18 @@ passport.use(new FacebookStrategy({
         } catch (err) {
             return done(err, null);
         }
+    }
+)); 
+
+passport.use(new TwitterStrategy({
+        consumerKey: process.env.TWITTER_KEY,
+        consumerSecret: process.env.TWITTER_SECRET,
+        callbackURL: process.env.PROXY_GATEWAY + "api/socialauth/twitter/callback"
+    },
+    function (token, tokenSecret, profile, cb) {
+        User.findOrCreate({twitterId: profile.id}, function (err, user) {
+            return cb(err, user);
+        });
     }
 ));
 
@@ -59,3 +70,4 @@ passport.deserializeUser(async (id, done) => {
     const user = await User.findById(id);
     done(null, user);
 });
+

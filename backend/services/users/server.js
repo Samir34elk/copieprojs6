@@ -23,9 +23,7 @@ app.use(userRoutes);
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(500).json({ error: 'Something went wrong!' });
+    res.status(500).json({error: 'Something went wrong!'});
 });
 
-app.listen(PORT, () => {
-    console.log(`Users service running on port ${PORT}`);
-});
+app.listen(PORT);
